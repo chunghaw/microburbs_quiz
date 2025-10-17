@@ -42,6 +42,9 @@ wheels/
 .DS_Store
 Thumbs.db
 
+# Quiz answers (private - share separately)
+QUIZ_ANSWERS.md
+
 # Data files (optional - uncomment if data files are too large)
 # *.parquet
 # *.gpkg
