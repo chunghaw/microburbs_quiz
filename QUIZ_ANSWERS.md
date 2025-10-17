@@ -14,17 +14,20 @@
 
 ## Paste the code here. Don't worry about formatting.
 
-### Main Analysis Script (create_analysis.py):
+### Main Analysis Script (final_analysis.py):
 ```python
-# See create_analysis.py in repository
-# Full code available at: https://github.com/chunghaw/microburbs_quiz/blob/main/create_analysis.py
+# See final_analysis.py in repository
+# Full code available at: https://github.com/chunghaw/microburbs_quiz/blob/main/final_analysis.py
 ```
 
 Key components:
-- Data loading and cleaning (transactions.parquet, gnaf_prop.parquet)
-- Momentum score calculation algorithm
-- Visualization generation (matplotlib/seaborn)
-- CSV export functionality
+- Data loading: transactions, GNAF properties, roads (4 data sources)
+- 12-month time window calculation
+- Road proximity analysis (accessibility scoring)
+- Investment score formula: G(35%) + P(15%) + Y(25%) + A(15%) + L(10%)
+- Rental yield estimation (Sydney benchmarks)
+- Multi-chart visualization generation
+- CSV export with investment signals
 
 ---
 
