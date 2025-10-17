@@ -130,13 +130,14 @@ for suburb in df_trans['suburb'].unique():
     suburb_previous = previous[previous['suburb'] == suburb]
     suburb_coords = df_with_coords[df_with_coords['suburb'] == suburb]
     
-    # Minimum 3 transactions required
-    if len(suburb_recent) < 3:
+    # Skip only if NO recent data at all
+    recent_count = len(suburb_recent)
+    if recent_count == 0:
         continue
     
     # Component 1: Price Growth (35%)
     recent_median = suburb_recent['price'].median()
-    if len(suburb_previous) >= 3:
+    if len(suburb_previous) >= 1:  # Changed from 3 to 1 - use any previous data
         previous_median = suburb_previous['price'].median()
         price_growth = ((recent_median - previous_median) / previous_median) * 100
         price_growth_score = min(35, max(0, (price_growth / 10) * 35))
@@ -164,8 +165,10 @@ for suburb in df_trans['suburb'].unique():
         accessibility_score = 7.5
     
     # Component 5: Market Liquidity (10%)
-    recent_count = len(suburb_recent)
     previous_count = len(suburb_previous)
+    
+    # Reliability indicator
+    reliability = 'HIGH' if recent_count >= 5 else 'MODERATE' if recent_count >= 3 else 'LOW'
     if previous_count > 0:
         activity_change = ((recent_count - previous_count) / previous_count) * 100
         liquidity_score = min(10, max(0, 5 + (activity_change / 100) * 5))
@@ -186,6 +189,7 @@ for suburb in df_trans['suburb'].unique():
         'action': action,
         'score_range': score_range,
         'investment_signal': signal,
+        'reliability': reliability,
         
         # Component scores
         'price_growth_score': price_growth_score,
@@ -201,6 +205,7 @@ for suburb in df_trans['suburb'].unique():
         'estimated_monthly_rent': monthly_rent,
         'avg_distance_to_road_m': avg_distance,
         'recent_transactions': recent_count,
+        'previous_transactions': previous_count,
         'activity_change_pct': activity_change
     })
 
