@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Microburbs Investment Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <!-- Header -->
+    <header class="dashboard-header">
+        <div class="container">
+            <div class="header-content">
+                <h1>🏘️ Microburbs Investment Dashboard</h1>
+                <p class="subtitle">Data-Driven Property Investment Intelligence</p>
+            </div>
+            <div class="header-stats" id="headerStats">
+                <div class="stat-card">
+                    <span class="stat-value">-</span>
+                    <span class="stat-label">Suburbs</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value">-</span>
+                    <span class="stat-label">Avg Score</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value">-</span>
+                    <span class="stat-label">BUY Signals</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Filters Section -->
+    <div class="filters-container">
+        <div class="container">
+            <div class="filters-grid">
+                <!-- State Filter -->
+                <div class="filter-group">
+                    <label>State</label>
+                    <select id="stateFilter" class="filter-select">
+                        <option value="">All States</option>
+                    </select>
+                </div>
+
+                <!-- Score Range Filter -->
+                <div class="filter-group">
+                    <label>Investment Signal</label>
+                    <select id="scoreFilter" class="filter-select">
+                        <option value="">All Signals</option>
+                    </select>
+                </div>
+
+                <!-- Price Range Filter -->
+                <div class="filter-group">
+                    <label>Price Range</label>
+                    <select id="priceFilter" class="filter-select">
+                        <option value="">All Prices</option>
+                    </select>
+                </div>
+
+                <!-- Reliability Filter -->
+                <div class="filter-group">
+                    <label>Data Reliability</label>
+                    <select id="reliabilityFilter" class="filter-select">
+                        <option value="">All</option>
+                    </select>
+                </div>
+
+                <!-- Search -->
+                <div class="filter-group">
+                    <label>Search Suburb</label>
+                    <input type="text" id="searchInput" class="filter-input" placeholder="Type suburb name...">
+                </div>
+
+                <!-- Reset Button -->
+                <div class="filter-group">
+                    <label>&nbsp;</label>
+                    <button id="resetFilters" class="btn-reset">Reset Filters</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div class="dashboard-main">
+        <div class="container">
+            <!-- Interpretation Guide -->
+            <div class="interpretation-guide">
+                <h3>📊 Score Interpretation Guide</h3>
+                <div class="guide-pills">
+                    <div class="pill pill-excellent">
+                        <span class="pill-range">&gt;75</span>
+                        <span class="pill-label">STRONG BUY</span>
+                    </div>
+                    <div class="pill pill-buy">
+                        <span class="pill-range">60-75</span>
+                        <span class="pill-label">BUY</span>
+                    </div>
+                    <div class="pill pill-hold">
+                        <span class="pill-range">45-60</span>
+                        <span class="pill-label">HOLD</span>
+                    </div>
+                    <div class="pill pill-caution">
+                        <span class="pill-range">30-45</span>
+                        <span class="pill-label">CAUTION</span>
+                    </div>
+                    <div class="pill pill-avoid">
+                        <span class="pill-range">&lt;30</span>
+                        <span class="pill-label">AVOID</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Suburbs Grid -->
+            <div class="suburbs-grid" id="suburbsGrid">
+                <!-- Dynamically populated -->
+            </div>
+
+            <!-- Loading State -->
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Loading investment data...</p>
+            </div>
+
+            <!-- No Results -->
+            <div class="no-results" id="noResults" style="display: none;">
+                <p>No suburbs match your filters</p>
+                <button onclick="resetFilters()" class="btn-reset">Reset Filters</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Suburb Detail Modal -->
+    <div class="modal" id="suburbModal">
+        <div class="modal-overlay" onclick="closeModal()"></div>
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <div id="modalContent">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="dashboard-footer">
+        <div class="container">
+            <p>Microburbs Investment Analysis | 12-Month Window | Formula: G(35%) + P(15%) + Y(25%) + A(15%) + L(10%)</p>
+            <p class="disclaimer">For guidance only - conduct thorough due diligence before investing</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
+
