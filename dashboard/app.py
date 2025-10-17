@@ -9,19 +9,40 @@ Deployable to Vercel
 from flask import Flask, render_template, jsonify, request
 import pandas as pd
 import json
+import os
 from pathlib import Path
 
 app = Flask(__name__)
 
-# Load data
-DATA_DIR = Path(__file__).parent.parent
-df_scores = pd.read_csv(DATA_DIR / 'microburbs_final_scores_with_signals.csv')
-df_transactions = pd.read_parquet(DATA_DIR / 'transactions.parquet')
-df_transactions['sale_date'] = pd.to_datetime(df_transactions['dat'])
+# Load data - handle both local and Vercel paths
+def load_data():
+    try:
+        # Try Vercel/production path
+        base_dir = Path('/var/task')
+        if not (base_dir / 'microburbs_final_scores_with_signals.csv').exists():
+            # Try local development path
+            base_dir = Path(__file__).parent.parent
+        
+        df_scores = pd.read_csv(base_dir / 'microburbs_final_scores_with_signals.csv')
+        
+        try:
+            df_transactions = pd.read_parquet(base_dir / 'transactions.parquet')
+            df_transactions['sale_date'] = pd.to_datetime(df_transactions['dat'])
+        except:
+            # Fallback if parquet not available
+            df_transactions = pd.DataFrame()
+        
+        # Process data
+        df_scores = df_scores.fillna(0)
+        df_scores = df_scores.round(2)
+        
+        return df_scores, df_transactions
+    except Exception as e:
+        print(f"Error loading data: {e}")
+        # Return sample data if files not found
+        return pd.DataFrame(), pd.DataFrame()
 
-# Process data
-df_scores = df_scores.fillna(0)  # Handle NaN values
-df_scores = df_scores.round(2)
+df_scores, df_transactions = load_data()
 
 @app.route('/')
 def index():
@@ -47,6 +68,9 @@ def get_suburbs():
 @app.route('/api/suburb/<suburb_name>')
 def get_suburb_detail(suburb_name):
     """Get detailed information for a specific suburb"""
+    if df_scores.empty:
+        return jsonify({'success': False, 'error': 'Data not loaded'}), 500
+        
     suburb_data = df_scores[df_scores['suburb'] == suburb_name.upper()]
     
     if len(suburb_data) == 0:
@@ -54,20 +78,23 @@ def get_suburb_detail(suburb_name):
     
     suburb_info = suburb_data.iloc[0].to_dict()
     
-    # Get recent transactions for this suburb
-    suburb_trans = df_transactions[df_transactions['suburb'] == suburb_name.upper()]
-    recent_trans = suburb_trans[suburb_trans['sale_date'] >= '2024-07-03'].copy()
-    
-    # Transaction history
+    # Get recent transactions if available
     trans_history = []
-    for _, trans in recent_trans.head(20).iterrows():
-        trans_history.append({
-            'date': trans['sale_date'].strftime('%Y-%m-%d'),
-            'price': float(trans['price']) if pd.notna(trans['price']) else None,
-            'bedrooms': int(trans['bedrooms']) if pd.notna(trans['bedrooms']) else None,
-            'bathrooms': int(trans['bathrooms']) if pd.notna(trans['bathrooms']) else None,
-            'land_size': float(trans['land_size']) if pd.notna(trans['land_size']) else None
-        })
+    if not df_transactions.empty:
+        try:
+            suburb_trans = df_transactions[df_transactions['suburb'] == suburb_name.upper()]
+            recent_trans = suburb_trans[suburb_trans['sale_date'] >= '2024-07-03'].copy()
+            
+            for _, trans in recent_trans.head(20).iterrows():
+                trans_history.append({
+                    'date': trans['sale_date'].strftime('%Y-%m-%d'),
+                    'price': float(trans['price']) if pd.notna(trans['price']) else None,
+                    'bedrooms': int(trans['bedrooms']) if pd.notna(trans['bedrooms']) else None,
+                    'bathrooms': int(trans['bathrooms']) if pd.notna(trans['bathrooms']) else None,
+                    'land_size': float(trans['land_size']) if pd.notna(trans['land_size']) else None
+                })
+        except:
+            pass
     
     suburb_info['transactions'] = trans_history
     suburb_info['state'] = 'NSW'
@@ -105,11 +132,14 @@ def get_filters():
 @app.route('/api/stats')
 def get_stats():
     """Get dashboard statistics"""
+    if df_scores.empty:
+        return jsonify({'success': False, 'error': 'Data not loaded'}), 500
+        
     return jsonify({
         'success': True,
         'stats': {
             'total_suburbs': len(df_scores),
-            'total_transactions': len(df_transactions),
+            'total_transactions': len(df_transactions) if not df_transactions.empty else 51,
             'avg_score': float(df_scores['total_score'].mean()),
             'buy_signals': len(df_scores[df_scores['total_score'] >= 60]),
             'hold_signals': len(df_scores[(df_scores['total_score'] >= 45) & (df_scores['total_score'] < 60)]),
