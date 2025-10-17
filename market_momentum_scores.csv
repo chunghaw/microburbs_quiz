@@ -1,0 +1,4 @@
+suburb,momentum_score,category,recent_median_price,price_growth_6m,recent_transactions,activity_change,price_score,activity_score,value_score
+NORTH WILLOUGHBY,75.0,📈 Growing,3700000.0,49.3,4,0.0,40,15.0,20
+NORTHBRIDGE,70.0,📈 Growing,5520500.0,0.0,4,300.0,20,30.0,20
+ROSEVILLE,26.4,📉 Cooling,2192500.0,-3.6,10,-28.6,0,6.4,20
