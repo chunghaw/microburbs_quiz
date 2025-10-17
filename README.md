@@ -1,172 +1,197 @@
-# 🏘️ Market Momentum Score for Australian Property Investors
+# 🏘️ Microburbs Investment Score Analysis
 
 ## Overview
 
-The **Market Momentum Score** is a data-driven metric designed to help Australian residential property investors identify high-potential investment opportunities. This analysis combines price growth trends, market activity levels, and value indicators to create an easy-to-understand score (0-100) for each suburb.
+A comprehensive **investment analysis tool** for Australian residential property investors that combines multiple data sources to provide actionable investment recommendations.
 
-**Task Attempted:** Option 1 - Real Estate Metric
-
-**Created by:** Chung Haw  
-**Date:** October 17, 2025  
-**Repository:** https://github.com/chunghaw/microburbs_quiz
+**Task Attempted:** Option 1 - Real Estate Metric  
+**Repository:** https://github.com/chunghaw/microburbs_quiz  
+**Analysis Period:** 12 months (July 2024 - July 2025)
 
 ---
 
-## 📊 What is the Market Momentum Score?
+## 🎯 What This Analysis Provides
 
-The Market Momentum Score is a composite metric (0-100) that combines three key factors:
+The **Microburbs Investment Score** is a data-driven composite metric (0-100) that evaluates suburbs based on:
 
-### Score Components:
+### Score Formula:
+```
+Investment Score = G(35%) + P(15%) + Y(25%) + A(15%) + L(10%)
 
-1. **Price Growth Score (40%)** - Measures median price change over the last 6 months vs previous 6 months
-2. **Market Activity Score (30%)** - Analyzes transaction volume trends and market liquidity
-3. **Value Score (30%)** - Evaluates current pricing relative to recent trends to identify value
-
-### Score Categories:
-
-- **80-100:** 🔥 **Hot Market** - Strong buy signals, high competition, act quickly
-- **60-79:** 📈 **Growing** - Positive momentum, good opportunities with lower competition
-- **40-59:** ⚖️ **Stable** - Steady performance, suitable for conservative investors
-- **20-39:** 📉 **Cooling** - Exercise caution, may indicate declining demand
-- **0-19:** ❄️ **Cold** - High risk, requires deeper due diligence
+Where:
+  G = Price Growth (12-month appreciation)
+  P = Affordability (median price relative to market)
+  Y = Rental Yield (estimated return on investment)
+  A = Accessibility (proximity to major roads)
+  L = Market Liquidity (transaction activity trends)
+```
 
 ---
 
-## 🎯 Key Findings
+## 📊 Interpretation for Investors
 
-### Analysis Coverage:
-- **Total Transactions:** 5,560 valid transactions
-- **Date Range:** December 2002 to July 2025
-- **Suburbs Analyzed:** 3 suburbs (with sufficient data)
+| Score Range | Meaning | Investment Signal |
+|-------------|---------|-------------------|
+| **> 75** | Strong growth + rental yield + good accessibility | **Ideal short- to mid-term buy** |
+| **60-75** | Steady growth, balanced returns | **Moderate risk, solid entry point** |
+| **45-60** | Average yield, slow appreciation | **Hold or long-term accumulation** |
+| **30-45** | Weak growth, liquidity issues | **Caution advised** |
+| **< 30** | Overvalued / isolated / low yield | **Avoid** |
 
-### Top Performing Suburbs:
+---
 
-| Rank | Suburb | Score | Category | 6m Growth | Median Price |
-|------|--------|-------|----------|-----------|--------------|
-| 1 | North Willoughby | 75.0 | 📈 Growing | +49.3% | $3,700,000 |
-| 2 | Northbridge | 70.0 | 📈 Growing | 0.0% | $5,520,500 |
-| 3 | Roseville | 26.4 | 📉 Cooling | -3.6% | $2,192,500 |
+## 🏆 Top Findings (12-Month Analysis)
+
+### Rankings:
+
+| Rank | Suburb | Score | Action | Investment Signal |
+|------|--------|-------|--------|-------------------|
+| **1** | **ROSEVILLE** | **71.5** | **BUY** | Moderate risk, solid entry point |
+| **2** | **WILLOUGHBY** | **60.1** | **BUY** | Moderate risk, solid entry point |
+| 3 | NORTHBRIDGE | 52.8 | HOLD/ACCUMULATE | Hold or long-term accumulation |
+| 4 | NORTH WILLOUGHBY | 52.5 | HOLD/ACCUMULATE | Hold or long-term accumulation |
+| 5 | CASTLE COVE | 50.7 | HOLD/ACCUMULATE | Hold or long-term accumulation |
+
+### Top Suburb: ROSEVILLE (71.5/100) 🔥
+
+**Why it ranks #1:**
+- **Exceptional growth:** +337.5% price appreciation (12 months)
+- **Strong liquidity:** +242.9% increase in market activity
+- **Good yield:** 3.8% annual rental return (~$7,204/month)
+- **Affordable:** $2.275M median (most accessible of top performers)
+
+**Investment Recommendation:** BUY - Solid fundamentals with balanced returns
+
+---
+
+## 📁 Data Sources
+
+| Component | Source File | Data Used |
+|-----------|------------|-----------|
+| **Price Growth (35%)** | `transactions.parquet` | 5,560 transactions (2002-2025) |
+| **Affordability (15%)** | `transactions.parquet` | Median price analysis |
+| **Rental Yield (25%)** | Industry proxy | Sydney market estimates (3-6%) |
+| **Accessibility (15%)** | `roads.gpkg` + `gnaf_prop.parquet` | Distance to major roads (6 roads) |
+| **Market Liquidity (10%)** | `transactions.parquet` | Transaction volume trends |
+
+**Geographic Coverage:** Sydney North Shore (NSW)  
+**Total Properties:** 70,591 addresses (GNAF database)
+
+---
+
+## 🚀 Key Features
+
+✅ **Comprehensive Analysis:** 5 weighted factors, not just price  
+✅ **Investor-Friendly:** Clear buy/hold/avoid signals  
+✅ **Transparent:** All scoring components visible  
+✅ **Data-Driven:** Based on real transactions, not opinions  
+✅ **Visual:** Professional charts and interpretation guide  
+✅ **Actionable:** Specific recommendations for each suburb  
+
+---
+
+## 📊 Methodology
+
+### 1. Price Growth Score (35 points)
+```python
+Growth % = (Recent 12m Median - Previous 12m Median) / Previous × 100
+Score = min(35, (Growth % / 10) × 35)
+```
+- Measures capital appreciation potential
+- 10% growth = maximum 35 points
+
+### 2. Affordability Score (15 points)
+```python
+Score = 15 - (Median Price / Market Max) × 15
+```
+- Lower price = higher score
+- Helps identify value opportunities
+
+### 3. Rental Yield Score (25 points)
+```python
+Yield % = (Annual Rent / Property Price) × 100
+Score = min(25, (Yield % / 6) × 25)
+```
+- Estimated from industry benchmarks
+- 6% yield = maximum 25 points
+
+### 4. Accessibility Score (15 points)
+```python
+Score = max(0, 15 - (Distance to Road / 5000m) × 15)
+```
+- Proximity to motorways, primary, secondary roads
+- Closer = better connectivity
+
+### 5. Market Liquidity Score (10 points)
+```python
+Activity Change % = (Recent Sales - Previous Sales) / Previous × 100
+Score = min(10, 5 + (Activity Change % / 100) × 5)
+```
+- Increasing activity = easier to buy/sell
+
+---
+
+## 📈 Key Statistics
+
+### Market Overview:
+- **Analysis Period:** 12 months (July 2024 - July 2025)
+- **Transactions Analyzed:** 51 (recent 12 months)
+- **Suburbs Qualifying:** 5 (minimum 3 transactions required)
+- **Average Score:** 57.5/100
 
 ### Market Distribution:
-- **Growing Markets:** 66.7% (2 suburbs)
-- **Cooling Markets:** 33.3% (1 suburb)
+- **BUY (60-75):** 2 suburbs (40%)
+- **HOLD/ACCUMULATE (45-60):** 3 suburbs (60%)
+- **CAUTION/AVOID (<45):** 0 suburbs (0%)
 
-### Key Statistics:
-- **Average Momentum Score:** 57.1
-- **Average Price Growth (6m):** 15.2%
-- **Suburbs with Positive Growth:** 33.3%
+### Price Range:
+- **Lowest:** $2.275M (Roseville)
+- **Highest:** $4.900M (Northbridge)
+- **Average:** $3.387M
 
----
-
-## 🚀 How to Use This Analysis
-
-### For Property Investors:
-
-#### 🔥 Hot Markets (Score 80-100)
-- **Action:** Act quickly on opportunities
-- **Strategy:** Short to medium-term gains
-- **Risk:** High competition, verify prices aren't inflated
-- **Best for:** Experienced investors comfortable with competition
-
-#### 📈 Growing Markets (Score 60-79)
-- **Action:** Recommended for most investors
-- **Strategy:** Balance of growth potential and value
-- **Risk:** Moderate, good risk-reward ratio
-- **Best for:** Most investors seeking growth
-
-#### ⚖️ Stable Markets (Score 40-59)
-- **Action:** Focus on long-term holds
-- **Strategy:** Capital preservation and rental yield
-- **Risk:** Lower risk, predictable returns
-- **Best for:** Conservative investors, first-time buyers
-
-#### 📉 Cooling/❄️ Cold Markets (Score 0-39)
-- **Action:** Exercise extreme caution
-- **Strategy:** Deeper due diligence required
-- **Risk:** High, potential value traps
-- **Best for:** Experienced investors with local knowledge
+### Rental Yields:
+- **Highest:** 3.8% (Roseville, Willoughby)
+- **Lowest:** 3.2% (Premium suburbs)
+- **Average:** 3.5%
 
 ---
 
-## 📈 Interpretation Guide
+## 💡 Investment Insights
 
-### For Investors with Limited Statistical Knowledge:
+### For Growth Investors:
+→ **ROSEVILLE** - Exceptional 337.5% growth, strong momentum
 
-**Think of the Momentum Score like a weather forecast:**
-- **80-100 (Hot):** Sunny and hot - the market is on fire, everyone wants to buy here
-- **60-79 (Growing):** Warm and pleasant - good weather ahead, comfortable investing
-- **40-59 (Stable):** Mild - steady and predictable, no surprises
-- **20-39 (Cooling):** Getting chilly - market slowing down, be careful
-- **0-19 (Cold):** Freezing - market is cold, stay away unless you know what you're doing
+### For Balanced Investors:
+→ **WILLOUGHBY** - Good accessibility, steady activity, affordable
 
-### What Each Component Means:
+### For Premium/Stable Investors:
+→ **NORTHBRIDGE** - Best accessibility (1km to major road), established area
 
-**Price Growth:** How much property values have increased (or decreased) in the last 6 months
-- Positive growth = Prices going up = Good for sellers, shows demand
-- Negative growth = Prices going down = Caution, but could be opportunity
-
-**Market Activity:** How many properties are being sold
-- Increasing activity = More buyers and sellers = Liquid market = Easier to buy/sell
-- Decreasing activity = Fewer transactions = Harder to sell if needed
-
-**Value Score:** Whether current prices are reasonable
-- High value score = Prices are in a good range, not overheated
-- Low value score = Prices might be too high, could be a bubble
+### For Long-Term Holders:
+→ **NORTH WILLOUGHBY** - Highest liquidity growth (+300%), patient accumulation
 
 ---
 
-## 💡 Investment Recommendations
-
-### North Willoughby (Score: 75.0) 🔥
-- **Why it's good:** Strong 49.3% price growth in 6 months
-- **Median Price:** $3,700,000
-- **Strategy:** Good for investors seeking growth in the North Shore
-- **Caution:** High price point, ensure you can afford holding costs
-
-### Northbridge (Score: 70.0) 📈
-- **Why it's good:** Stable activity in premium location
-- **Median Price:** $5,520,500
-- **Strategy:** Premium investment, stable high-value area
-- **Caution:** Very high entry price, target wealthy buyers/renters
-
-### Roseville (Score: 26.4) ⚠️
-- **Why it's challenging:** -3.6% price decline in 6 months
-- **Median Price:** $2,192,500
-- **Strategy:** Wait and watch, may present opportunities if market rebounds
-- **Caution:** Declining market, investigate why prices are falling
-
----
-
-## 📁 Files Generated
-
-1. **`market_momentum_scores.csv`** - Complete rankings for all suburbs
-2. **`top_suburbs_transactions.csv`** - Detailed transaction data for top 10 suburbs
-3. **`market_momentum_overview.png`** - Main visualization dashboard
-4. **`market_category_analysis.png`** - Category distribution analysis
-5. **`create_analysis.py`** - Python script to run the analysis
-
----
-
-## 🔧 How to Run
+## 🔧 How to Use
 
 ### Prerequisites:
 ```bash
-python 3.11+
-pandas, numpy, matplotlib, seaborn, geopandas
+Python 3.11+
+pandas, pyarrow, geopandas, matplotlib, seaborn
 ```
 
 ### Installation:
 ```bash
-# Clone the repository
+# Clone repository
 git clone https://github.com/chunghaw/microburbs_quiz.git
 cd microburbs_quiz
 
 # Create virtual environment
 python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate  # Windows: venv\Scripts\activate
 
 # Install dependencies
-pip install pandas pyarrow geopandas matplotlib seaborn scikit-learn
+pip install -r requirements.txt
 ```
 
 ### Run Analysis:
@@ -176,153 +201,179 @@ python3 create_analysis.py
 
 ---
 
-## 📊 Methodology
+## 📁 Files Generated
 
-### Data Sources:
-- **Transactions Dataset:** 5,576 property transactions (2002-2025)
-- **GNAF Properties:** 70,591 property records with geocoding
-- **Data Quality:** 99.7% valid transactions with price data
+### Core Analysis:
+1. **`microburbs_final_scores_with_signals.csv`** - Complete data with all metrics
+2. **`microburbs_final_with_interpretation.png`** - Visual dashboard with interpretation guide
+3. **`top_suburbs_transactions.csv`** - Detailed transaction history (945 KB)
 
-### Calculation Approach:
-
-1. **Time Windows:**
-   - Recent Period: Last 6 months
-   - Previous Period: 6-12 months ago
-   - Minimum: 3 transactions per period for reliability
-
-2. **Price Growth Score (0-40 points):**
-   - Compares median prices between periods
-   - 10% growth = maximum score
-   - Normalized to 0-40 scale
-
-3. **Activity Score (0-30 points):**
-   - Measures transaction volume change
-   - Increasing activity = higher score
-   - 50% increase = maximum score
-
-4. **Value Score (0-30 points):**
-   - Analyzes price per sqm trends
-   - Sweet spot: Recent prices 95-115% of historical average
-   - Prevents overvaluation alerts
-
-### Accuracy & Limitations:
-
-**Accuracy:** High for data-rich suburbs (3+ suburbs with 100+ transactions each)
-
-**Limitations:**
-- Requires minimum 3 recent transactions per suburb
-- Limited to areas with transaction data
-- Price per sqm analysis requires land size data
-- Does not account for property condition, renovations, or unique features
-- Cannot predict sudden market shocks or policy changes
+### Documentation:
+- **`README.md`** - This file
+- **`QUIZ_ANSWERS.md`** - Assessment answers
+- **`requirements.txt`** - Python dependencies
 
 ---
 
-## 🐛 Current Bugs & Future Improvements
+## 🎨 Visualization
 
-### Known Issues:
-- Limited suburbs in current dataset (only 3 met minimum transaction threshold)
-- Property type differentiation not granular (houses vs units)
-- No integration with external data (e.g., infrastructure projects, school catchments)
+The main visualization (`microburbs_final_with_interpretation.png`) includes:
 
-### Potential Fixes (Given More Time):
-- Lower minimum transaction threshold to 2 (with confidence intervals)
-- Add property type segmentation
-- Include seasonal adjustments for market cycles
-- Integrate rental yield data for income investors
+1. **Interpretation Guide** (top) - Score ranges with investment signals
+2. **Overall Scores** - Color-coded by action (BUY/HOLD/AVOID)
+3. **Component Breakdown** - Stacked bars showing G+P+Y+A+L
+4. **Price Growth** - 12-month appreciation percentages
+5. **Rental Yield** - Estimated returns with monthly rent
+6. **Investment Matrix** - Complete data table
+7. **Price Comparison** - Median prices across suburbs
+8. **Market Activity** - Transaction volume trends
+9. **Accessibility** - Road proximity scores
 
-### Future Enhancements:
-1. **Additional Metrics:**
-   - Days on market trends
-   - Auction clearance rates
-   - Rental yield analysis
+---
+
+## ⚠️ Important Disclaimers
+
+### Data Limitations:
+1. **Rental yields are ESTIMATED** - No actual rental data available
+   - Used Sydney market benchmarks (3-6%)
+   - Should verify with actual rental listings
+
+2. **Limited geographic coverage** - Sydney North Shore only
+   - No Melbourne data available in dataset
+   - Cannot analyze other states
+
+3. **Sample size constraints** - Only suburbs with 3+ recent transactions
+   - Market has been quiet (51 sales in 12 months)
+   - Many suburbs excluded due to low activity
+
+4. **Time window trade-offs**
+   - 12 months: More suburbs, less "current"
+   - 6 months: More current, fewer suburbs
+   - Current choice: 12 months for better coverage
+
+### Investment Advice:
+This analysis is a **research tool** only. Always:
+- ✓ Conduct thorough due diligence
+- ✓ Inspect properties physically
+- ✓ Consult with real estate agents, financial advisors, solicitors
+- ✓ Verify legal status and property condition
+- ✓ Consider your personal financial situation
+- ✓ Remember: Past performance ≠ future results
+
+---
+
+## 🐛 Known Limitations & Future Improvements
+
+### Current Limitations:
+- Property type not differentiated (houses vs units vs townhouses)
+- No actual rental data (using proxies)
+- Limited to one geographic region
+- No infrastructure project analysis
+- No school catchment integration
+
+### Planned Enhancements:
+1. **Data Integration:**
+   - Real rental listings (Domain/REA API)
    - School catchment quality scores
+   - Planned infrastructure projects
+   - Crime statistics
+   - Demographic trends
 
-2. **Predictive Features:**
+2. **Analysis Improvements:**
    - Machine learning price forecasts
+   - Property type segmentation
+   - Seasonal adjustments
+   - Confidence intervals
    - Risk assessment models
-   - Infrastructure impact analysis
 
 3. **User Features:**
    - Interactive web dashboard
    - Email alerts for score changes
    - Suburb comparison tool
-   - Investment calculator with ROI projections
-
-### Scaling Challenges (Whole Country):
-**Challenge:** Processing 15+ million transactions nationwide, real-time updates
-**Modifications Required:**
-- Database backend (PostgreSQL/MongoDB) instead of files
-- Distributed computing (Apache Spark) for calculations
-- API rate limiting and caching
-- Regional data centers for low latency
-- Automated data pipeline for daily updates
+   - ROI calculator with scenarios
+   - Portfolio optimization
 
 ---
 
-## 🎯 Tagline
+## 🔄 Methodology Changes
+
+### From Initial to Final Analysis:
+
+**Time Window:** 6 months → **12 months**
+- Reason: Capture more data, include more suburbs
+- Result: 3 suburbs → 5 suburbs analyzed
+
+**Scoring System:** Simplified → **Multi-factor weighted**
+- Added: Affordability, Accessibility, Liquidity components
+- Weights: Aligned with investor priorities
+
+**Interpretation:** Technical → **Investor-friendly**
+- Added: Clear buy/hold/avoid signals
+- Added: Score range interpretation guide
+- Added: Specific investor advice per suburb
+
+**Transparency:** Hidden formulas → **Fully documented**
+- Every calculation explained
+- All raw data exported
+- Complete methodology visible
+
+---
+
+## 📊 Comparison: 6-Month vs 12-Month Analysis
+
+| Metric | 6-Month | 12-Month |
+|--------|---------|----------|
+| Suburbs analyzed | 3 | 5 |
+| Transactions | 20 | 51 |
+| Top suburb | North Willoughby (75.0) | Roseville (71.5) |
+| Market coverage | Limited | Better |
+| Recency | More current | Balanced |
+
+**Why 12-month is better:**
+- More suburbs qualify (3→5)
+- More reliable statistics (20→51 transactions)
+- Still recent enough for investment decisions
+- Better market representation
+
+---
+
+## 🎯 Assessment Answers (40-word summaries)
+
+**Full answers available in `QUIZ_ANSWERS.md`**
+
+### Approach:
+Created composite investment score combining price growth, affordability, rental yield, road proximity, and market liquidity. Changed from 6-month to 12-month window for better coverage. Implemented clear interpretation guide for non-technical investors.
+
+### What it does:
+Analyzes Sydney suburbs using weighted formula: Price Growth (35%), Affordability (15%), Rental Yield (25%), Accessibility (15%), Liquidity (10%). Generates scores (0-100) with clear buy/hold/avoid signals and detailed investment recommendations.
+
+### Interpretation:
+Scores above 60 indicate BUY opportunities with solid fundamentals. Scores 45-60 suggest HOLD for long-term accumulation. Below 45 requires caution. Use alongside traditional due diligence, not as sole basis.
+
+### Findings:
+Roseville leads (71.5) with 337.5% growth and strong liquidity. Accuracy high with 12-month data (51 transactions). Reliable for suburbs with 3+ sales. Most suburbs show stable to positive momentum.
+
+---
+
+## 📧 Contact & Repository
+
+**GitHub:** https://github.com/chunghaw/microburbs_quiz  
+**Shared with:** david@microburbs.com.au  
+**Created:** October 17, 2025  
+**Purpose:** Microburbs Technical Assessment
+
+---
+
+## 🏅 Tagline
 
 **"Your Smart Compass for Australian Property Investment - Know Where the Market is Heading Before You Buy"**
 
 ---
 
-## 📝 Approach & Learnings
-
-### Initial Approach:
-Started with the goal of creating a simple, actionable metric for investors without technical backgrounds. Explored multiple approaches including pure price-based indices and volume-only metrics before settling on a balanced composite score.
-
-### Pivots Made:
-- Initially planned purely quantitative scoring, pivoted to include value assessment to prevent overvaluation alerts
-- Changed from absolute growth to normalized scores to allow cross-suburb comparisons
-- Simplified category names from technical terms to emoji-based labels for accessibility
-
-### Key Learnings:
-Data quality is critical - spent significant time filtering invalid transactions. The sweet spot is balancing sophistication with interpretability. Investors need actionable insights, not just numbers. Visual communication is as important as numerical accuracy.
-
----
-
-## 🎨 Screenshot
-
-![Market Momentum Overview](market_momentum_overview.png)
-
-*Comprehensive dashboard showing momentum score distribution, market categories, growth patterns, and top-performing suburbs*
-
----
-
-## 🤔 Task Reflection
-
-### What I Thought:
-Excellent real-world task that balances technical analysis with practical usability. Appreciated the focus on investor needs and accessibility. The open-ended nature allowed creativity while the strict word limits forced clear, concise thinking. Great test of both technical skills and business communication.
-
-### Challenges:
-Balancing statistical rigor with simplicity for non-technical users was the main challenge. Also, working with limited data required careful threshold selection to ensure reliability. The 40-word limits were surprisingly difficult but valuable for clarity.
-
----
-
-## ⚠️ Important Disclaimer
-
-This analysis is a **research tool** and should not be the sole basis for investment decisions. Always:
-- Conduct thorough due diligence
-- Inspect properties physically
-- Consult with real estate agents, financial advisors, and solicitors
-- Verify legal status and property condition
-- Consider your personal financial situation
-- Remember: Past performance doesn't guarantee future results
-
----
-
-## 📧 Contact
-
-**GitHub:** https://github.com/chunghaw/microburbs_quiz  
-**Email:** (shared with david@microburbs.com.au)
-
----
-
 ## 📄 License
 
-This project is created for the Microburbs assessment task.
+Created for Microburbs assessment task. Data sources credited appropriately.
 
 ---
 
-**Note:** This analysis uses sample data from the Sydney North Shore area (2002-2025). For production use, expand to include all Australian suburbs with robust data validation and real-time updates.
-
+**Note:** This analysis demonstrates data science capabilities, investment analysis methodology, and clear communication for non-technical stakeholders. Production deployment would require expanded data sources, real-time updates, and comprehensive testing.
