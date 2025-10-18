@@ -4,22 +4,33 @@ Live interactive investment dashboard with filters and Cursor-like theme.
 
 ## Features
 
+✅ **Microburbs API Integration:**
+- Real-time property data from Microburbs
+- Market insights and trends
+- Demographics and population data
+- Schools and amenities
+- Risk factors analysis
+- **20+ suburbs** available (expandable to all Australian suburbs)
+
 ✅ **Interactive Filters:**
 - State selection
 - Score range (investment signal)
 - Price range
 - Data reliability
-- Suburb search
+- Suburb search (real-time)
 
 ✅ **Modern UI:**
 - Cursor-inspired dark theme
 - Sleek color palette
 - Responsive design
 - Smooth animations
+- Click cards for detailed views
 
 ✅ **Comprehensive Data:**
-- 7 suburbs analyzed
-- Investment scores (0-100)
+- **API Data:** Properties, market insights, demographics, schools, amenities
+- **Investment Scores:** G(35%) + P(15%) + Y(25%) + A(15%) + L(10%)
+- **7 scored suburbs** (Sydney North Shore with full analysis)
+- **20+ API suburbs** (Newcastle, Sydney CBD, etc.)
 - Price growth metrics
 - Rental yield estimates
 - Road accessibility
@@ -73,14 +84,52 @@ vercel
 - **Reliability:** HIGH, MODERATE, LOW
 - **Search:** Real-time suburb name search
 
+## Data Sources
+
+**Primary:** Microburbs API (https://www.microburbs.com.au/report_generator/api)
+- Properties for sale
+- Market insights
+- Demographics
+- Schools & amenities
+- Risk factors
+
+**Enhancement:** Local investment score calculations
+- 7 fully analyzed suburbs with scores
+- Historical price growth
+- Rental yield estimates
+- Road accessibility analysis
+
+**Architecture:**
+```
+User Request
+    ↓
+Try Microburbs API
+    ├─ Success → Use API data + enhance with local scores
+    └─ Fail → Fallback to local CSV data
+```
+
+## Suburbs Available
+
+**With Investment Scores (7):**
+- Roseville, Willoughby, Northbridge, North Willoughby
+- Castle Cove, Middle Cove, Willoughby East
+
+**With API Data Only (13+):**
+- Belmont North, Belmont, Charlestown, Newcastle
+- Sydney, Parramatta, Bondi, Manly
+- And more...
+
+**Total:** 20+ suburbs, expandable to all Australia
+
 ## Future Enhancements
 
-- [ ] Connect to Microburbs API
+- [x] Connect to Microburbs API ✅
 - [ ] Add more states (VIC, QLD, etc.)
-- [ ] Real-time data updates
+- [ ] Calculate scores for all API suburbs
 - [ ] Export functionality
-- [ ] Comparison tool
+- [ ] Suburb comparison tool
 - [ ] Email alerts
+- [ ] Save favorites
 
 ## Environment Variables
 

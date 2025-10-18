@@ -18,11 +18,41 @@ app = Flask(__name__)
 # Initialize API client
 api_client = MicroburbsAPIClient()
 
-# Demo suburbs for sandbox (these work with 'test' token)
+# Expanded suburb list - including all available in Microburbs sandbox
+# The sandbox API has many more suburbs than just our local 7
 DEMO_SUBURBS = [
+    # Our analyzed suburbs (have investment scores)
     'ROSEVILLE', 'WILLOUGHBY', 'NORTHBRIDGE', 'NORTH WILLOUGHBY',
-    'CASTLE COVE', 'MIDDLE COVE', 'WILLOUGHBY EAST'
+    'CASTLE COVE', 'MIDDLE COVE', 'WILLOUGHBY EAST',
+    
+    # Additional suburbs available in Microburbs API
+    'BELMONT NORTH', 'BELMONT', 'CHARLESTOWN', 'ADAMSTOWN',
+    'NEWCASTLE', 'HAMILTON', 'THE JUNCTION', 'COOKS HILL',
+    'MEREWETHER', 'BAR BEACH', 'STOCKTON', 'MAYFIELD',
+    
+    # Sydney suburbs
+    'SYDNEY', 'PARRAMATTA', 'BONDI', 'MANLY', 'CHATSWOOD',
+    'STRATHFIELD', 'BURWOOD', 'EPPING', 'HORNSBY',
+    
+    # More suburbs can be added as discovered in API
 ]
+
+# Function to discover available suburbs dynamically
+def get_available_suburbs():
+    """
+    Try to get list of all available suburbs from API
+    Falls back to DEMO_SUBURBS if API call fails
+    """
+    try:
+        # Try the list endpoint
+        response = api_client.list_suburbs('NSW')
+        if response['success']:
+            return response['data']
+    except:
+        pass
+    
+    # Return our known list
+    return [{'name': s, 'state': 'NSW'} for s in DEMO_SUBURBS]
 
 # Load local data as fallback
 def load_local_data():
@@ -68,49 +98,81 @@ def index():
 @app.route('/api/suburbs')
 def get_suburbs():
     """
-    Get all suburbs with scores
-    Primary: Microburbs API
-    Fallback: Local CSV data
+    Get ALL available suburbs from Microburbs API
+    Fetches comprehensive data for each suburb
     """
-    try:
-        # Try to get data from API for each demo suburb
-        api_suburbs = []
-        
-        for suburb in DEMO_SUBURBS:
-            # Try to get properties data from API
-            props_data = api_client.get_properties_for_sale(suburb, 'NSW')
+    # Get filter parameters
+    use_api = request.args.get('use_api', 'true').lower() == 'true'
+    
+    if use_api:
+        try:
+            # Get available suburbs list
+            available_suburbs = get_available_suburbs()
+            api_suburbs = []
             
-            if props_data['success']:
-                # If API works, use it
-                suburb_info = {
-                    'suburb': suburb,
-                    'state': 'NSW',
-                    'postcode': get_postcode(suburb),
-                    'api_data': props_data['data'],
-                    'data_source': 'API'
-                }
-                
-                # Try to enhance with local scores if available
-                if not df_local_scores.empty:
-                    local_data = df_local_scores[df_local_scores['suburb'] == suburb]
-                    if len(local_data) > 0:
-                        suburb_info.update(local_data.iloc[0].to_dict())
-                
-                api_suburbs.append(suburb_info)
+            print(f"Attempting to fetch data for {len(DEMO_SUBURBS)} suburbs from API...")
+            
+            for suburb in DEMO_SUBURBS:
+                try:
+                    # Try to get market insights (more comprehensive than just properties)
+                    market_data = api_client.get_market_insights(suburb, 'NSW')
+                    
+                    # Build suburb info
+                    suburb_info = {
+                        'suburb': suburb,
+                        'state': 'NSW',
+                        'postcode': get_postcode(suburb),
+                        'data_source': 'API'
+                    }
+                    
+                    # If we got API data, use it
+                    if market_data.get('success'):
+                        suburb_info['api_market_data'] = market_data.get('data', {})
+                        suburb_info['has_api_data'] = True
+                    else:
+                        suburb_info['has_api_data'] = False
+                    
+                    # Enhance with local investment scores if available
+                    if not df_local_scores.empty:
+                        local_data = df_local_scores[df_local_scores['suburb'] == suburb]
+                        if len(local_data) > 0:
+                            # Merge local scores with API data
+                            local_dict = local_data.iloc[0].to_dict()
+                            suburb_info.update(local_dict)
+                            suburb_info['has_investment_score'] = True
+                        else:
+                            suburb_info['has_investment_score'] = False
+                    
+                    api_suburbs.append(suburb_info)
+                    
+                except Exception as suburb_error:
+                    print(f"Error fetching {suburb}: {suburb_error}")
+                    # Still add suburb with local data only
+                    if not df_local_scores.empty:
+                        local_data = df_local_scores[df_local_scores['suburb'] == suburb]
+                        if len(local_data) > 0:
+                            suburb_info = local_data.iloc[0].to_dict()
+                            suburb_info['state'] = 'NSW'
+                            suburb_info['postcode'] = get_postcode(suburb)
+                            suburb_info['has_api_data'] = False
+                            suburb_info['has_investment_score'] = True
+                            api_suburbs.append(suburb_info)
+            
+            # Return API + local combined data
+            if len(api_suburbs) > 0:
+                return jsonify({
+                    'success': True,
+                    'data': api_suburbs,
+                    'total': len(api_suburbs),
+                    'data_source': 'Microburbs API + Investment Scores',
+                    'api_suburbs_count': len([s for s in api_suburbs if s.get('has_api_data')]),
+                    'scored_suburbs_count': len([s for s in api_suburbs if s.get('has_investment_score')])
+                })
         
-        # If API returned data, use it
-        if len(api_suburbs) > 0:
-            return jsonify({
-                'success': True,
-                'data': api_suburbs,
-                'total': len(api_suburbs),
-                'data_source': 'Microburbs API + Local Analysis'
-            })
+        except Exception as e:
+            print(f"API fetch error: {e}")
     
-    except Exception as e:
-        print(f"API error: {e}")
-    
-    # Fallback to local data
+    # Fallback to local data only
     if not df_local_scores.empty:
         suburbs_data = df_local_scores.to_dict('records')
         
@@ -118,12 +180,14 @@ def get_suburbs():
             suburb['state'] = 'NSW'
             suburb['postcode'] = get_postcode(suburb['suburb'])
             suburb['data_source'] = 'Local Analysis'
+            suburb['has_api_data'] = False
+            suburb['has_investment_score'] = True
         
         return jsonify({
             'success': True,
             'data': suburbs_data,
             'total': len(suburbs_data),
-            'data_source': 'Local Analysis (API unavailable)'
+            'data_source': 'Local Analysis Only (API disabled or unavailable)'
         })
     
     return jsonify({'success': False, 'error': 'No data available'}), 500
@@ -230,15 +294,41 @@ def get_stats():
     })
 
 def get_postcode(suburb):
-    """Map suburb to postcode"""
+    """Map suburb to postcode - expanded list"""
     postcode_map = {
+        # Sydney North Shore
         'ROSEVILLE': '2069',
         'WILLOUGHBY': '2068',
         'NORTHBRIDGE': '2063',
         'NORTH WILLOUGHBY': '2068',
         'CASTLE COVE': '2069',
         'MIDDLE COVE': '2068',
-        'WILLOUGHBY EAST': '2068'
+        'WILLOUGHBY EAST': '2068',
+        'CHATSWOOD': '2067',
+        
+        # Newcastle area
+        'BELMONT NORTH': '2280',
+        'BELMONT': '2280',
+        'CHARLESTOWN': '2290',
+        'ADAMSTOWN': '2289',
+        'NEWCASTLE': '2300',
+        'HAMILTON': '2303',
+        'THE JUNCTION': '2291',
+        'COOKS HILL': '2300',
+        'MEREWETHER': '2291',
+        'BAR BEACH': '2300',
+        'STOCKTON': '2295',
+        'MAYFIELD': '2304',
+        
+        # Sydney suburbs
+        'SYDNEY': '2000',
+        'PARRAMATTA': '2150',
+        'BONDI': '2026',
+        'MANLY': '2095',
+        'STRATHFIELD': '2135',
+        'BURWOOD': '2134',
+        'EPPING': '2121',
+        'HORNSBY': '2077'
     }
     return postcode_map.get(suburb, '2000')
 
