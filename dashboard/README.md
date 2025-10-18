@@ -1,6 +1,8 @@
-# 🏘️ Microburbs Interactive Dashboard
+# 🏘️ Microburbs Multi-Period Investment Dashboard
 
-Live interactive investment dashboard with filters and Cursor-like theme.
+Live interactive dashboard with 4 time-period analysis (1Y/3Y/5Y/9Y) and Cursor-like theme.
+
+**Live Demo:** https://microburbs-quiz.vercel.app
 
 ## Features
 

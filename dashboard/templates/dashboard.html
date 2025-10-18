@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Microburbs Multi-Period Investment Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="dashboard-header">
+        <div class="container">
+            <div class="header-content">
+                <h1>🏘️ Microburbs Investment Dashboard</h1>
+                <p class="subtitle">Multi-Period Investment Analysis | 1Y | 3Y | 5Y | 9Y Trends</p>
+            </div>
+            
+            <!-- Period Selector -->
+            <div class="period-selector">
+                <button class="period-btn active" data-period="9_year">
+                    <span class="period-label">9-Year</span>
+                    <span class="period-desc">Long-term</span>
+                </button>
+                <button class="period-btn" data-period="5_year">
+                    <span class="period-label">5-Year</span>
+                    <span class="period-desc">Medium-term</span>
+                </button>
+                <button class="period-btn" data-period="3_year">
+                    <span class="period-label">3-Year</span>
+                    <span class="period-desc">Post-COVID</span>
+                </button>
+                <button class="period-btn" data-period="1_year">
+                    <span class="period-label">1-Year</span>
+                    <span class="period-desc">Current</span>
+                </button>
+            </div>
+            
+            <!-- Stats Cards -->
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-card">
+                    <div class="stat-value" id="statSuburbs">-</div>
+                    <div class="stat-label">Suburbs</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statScore">-</div>
+                    <div class="stat-label">Avg Score</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statGrowth">-</div>
+                    <div class="stat-label">Avg Growth</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statBuy">-</div>
+                    <div class="stat-label">BUY Signals</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Interpretation Guide -->
+    <section class="interpretation-section">
+        <div class="container">
+            <h3>📊 Score Interpretation Guide</h3>
+            <div class="guide-pills">
+                <div class="pill pill-excellent">
+                    <span class="pill-range">&gt;75</span>
+                    <span class="pill-label">STRONG BUY</span>
+                </div>
+                <div class="pill pill-buy">
+                    <span class="pill-range">60-75</span>
+                    <span class="pill-label">BUY</span>
+                </div>
+                <div class="pill pill-hold">
+                    <span class="pill-range">45-60</span>
+                    <span class="pill-label">HOLD</span>
+                </div>
+                <div class="pill pill-caution">
+                    <span class="pill-range">30-45</span>
+                    <span class="pill-label">CAUTION</span>
+                </div>
+                <div class="pill pill-avoid">
+                    <span class="pill-range">&lt;30</span>
+                    <span class="pill-label">AVOID</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <div class="dashboard-content">
+        <div class="container">
+            <!-- Charts Grid -->
+            <div class="charts-grid">
+                <!-- Investment Signal Distribution -->
+                <div class="chart-card">
+                    <h3>📊 Investment Signal Distribution</h3>
+                    <canvas id="signalDistChart"></canvas>
+                </div>
+
+                <!-- Price Growth -->
+                <div class="chart-card">
+                    <h3>📈 Price Growth Rankings</h3>
+                    <canvas id="growthChart"></canvas>
+                </div>
+
+                <!-- Performance Heatmap -->
+                <div class="chart-card full-width">
+                    <h3>🌡️ Performance Heatmap (Suburbs × Time Periods)</h3>
+                    <div id="heatmapContainer"></div>
+                </div>
+
+                <!-- Rental Yield -->
+                <div class="chart-card">
+                    <h3>💰 Rental Yield Comparison</h3>
+                    <canvas id="yieldChart"></canvas>
+                </div>
+
+                <!-- Transactions Volume -->
+                <div class="chart-card">
+                    <h3>📊 Transaction Volume</h3>
+                    <canvas id="transactionsChart"></canvas>
+                </div>
+
+                <!-- Investment Scores Across Periods -->
+                <div class="chart-card full-width">
+                    <h3>🏆 Investment Scores Across Time Periods</h3>
+                    <canvas id="scoresAcrossPeriodsChart"></canvas>
+                </div>
+
+                <!-- Ranking Table -->
+                <div class="chart-card full-width">
+                    <h3>📋 Complete Rankings</h3>
+                    <div class="table-container" id="rankingTable"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <p>Loading investment data...</p>
+    </div>
+
+    <!-- Footer -->
+    <footer class="dashboard-footer">
+        <div class="container">
+            <p>Microburbs Multi-Period Investment Analysis | Formula: G(35%) + P(15%) + Y(25%) + A(15%) + L(10%)</p>
+            <p class="disclaimer">For guidance only - conduct thorough due diligence before investing</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='dashboard.js') }}"></script>
+</body>
+</html>
+
