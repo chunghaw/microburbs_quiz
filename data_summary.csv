@@ -1,0 +1,5 @@
+File,Rows,Columns,Key Info
+transactions.parquet,"5,576",27,"16 suburbs, 22.5 years"
+gnaf_prop.parquet,"70,591",30,"9 localities, all geocoded"
+cadastre.gpkg,"1,294",3,Land parcels with MultiPolygon geometry
+roads.gpkg,173,15,"7 road types, 173 segments"
