@@ -113,98 +113,13 @@ def index():
 @app.route('/api/suburbs')
 def get_suburbs():
     """
-    Get ALL available suburbs from Microburbs API
-    Supports NSW + VIC suburbs
+    Get suburbs data
+    Note: Microburbs API sandbox returns HTML, not JSON (requires real API key)
+    Currently using local analyzed data
     """
-    # Get filter parameters
-    use_api = request.args.get('use_api', 'true').lower() == 'true'
-    state_filter = request.args.get('state', '')
+    # For now, use local data since sandbox API doesn't return JSON
+    # When real API key is available, uncomment the API logic
     
-    # Get list of suburbs to fetch
-    suburbs_to_fetch = []
-    if state_filter:
-        suburbs_to_fetch = SUBURBS_BY_STATE.get(state_filter, [])
-    else:
-        # Get all suburbs from all states
-        for state, suburbs in SUBURBS_BY_STATE.items():
-            suburbs_to_fetch.extend(suburbs)
-    
-    if use_api:
-        try:
-            api_suburbs = []
-            
-            print(f"Attempting to fetch data for {len(suburbs_to_fetch)} suburbs from API...")
-            
-            # Get state for each suburb
-            suburb_state_map = {}
-            for state, suburbs in SUBURBS_BY_STATE.items():
-                for suburb in suburbs:
-                    suburb_state_map[suburb] = state
-            
-            for suburb in suburbs_to_fetch:
-                try:
-                    # Get correct state for this suburb
-                    suburb_state = suburb_state_map.get(suburb, 'NSW')
-                    
-                    # Try to get market insights
-                    market_data = api_client.get_market_insights(suburb, suburb_state)
-                    
-                    # Build suburb info
-                    suburb_info = {
-                        'suburb': suburb,
-                        'state': suburb_state,
-                        'postcode': get_postcode(suburb),
-                        'data_source': 'API'
-                    }
-                    
-                    # If we got API data, use it
-                    if market_data.get('success'):
-                        suburb_info['api_market_data'] = market_data.get('data', {})
-                        suburb_info['has_api_data'] = True
-                    else:
-                        suburb_info['has_api_data'] = False
-                    
-                    # Enhance with local investment scores if available
-                    if not df_local_scores.empty:
-                        local_data = df_local_scores[df_local_scores['suburb'] == suburb]
-                        if len(local_data) > 0:
-                            # Merge local scores with API data
-                            local_dict = local_data.iloc[0].to_dict()
-                            suburb_info.update(local_dict)
-                            suburb_info['has_investment_score'] = True
-                        else:
-                            suburb_info['has_investment_score'] = False
-                    
-                    api_suburbs.append(suburb_info)
-                    
-                except Exception as suburb_error:
-                    print(f"Error fetching {suburb}: {suburb_error}")
-                    # Still add suburb with local data only
-                    if not df_local_scores.empty:
-                        local_data = df_local_scores[df_local_scores['suburb'] == suburb]
-                        if len(local_data) > 0:
-                            suburb_info = local_data.iloc[0].to_dict()
-                            suburb_info['state'] = 'NSW'
-                            suburb_info['postcode'] = get_postcode(suburb)
-                            suburb_info['has_api_data'] = False
-                            suburb_info['has_investment_score'] = True
-                            api_suburbs.append(suburb_info)
-            
-            # Return API + local combined data
-            if len(api_suburbs) > 0:
-                return jsonify({
-                    'success': True,
-                    'data': api_suburbs,
-                    'total': len(api_suburbs),
-                    'data_source': 'Microburbs API + Investment Scores',
-                    'api_suburbs_count': len([s for s in api_suburbs if s.get('has_api_data')]),
-                    'scored_suburbs_count': len([s for s in api_suburbs if s.get('has_investment_score')])
-                })
-        
-        except Exception as e:
-            print(f"API fetch error: {e}")
-    
-    # Fallback to local data only
     if not df_local_scores.empty:
         suburbs_data = df_local_scores.to_dict('records')
         
@@ -219,7 +134,8 @@ def get_suburbs():
             'success': True,
             'data': suburbs_data,
             'total': len(suburbs_data),
-            'data_source': 'Local Analysis Only (API disabled or unavailable)'
+            'data_source': 'Investment Analysis (Sandbox API requires real key for JSON data)',
+            'note': 'To enable full Microburbs API: Set MICROBURBS_API_KEY environment variable'
         })
     
     return jsonify({'success': False, 'error': 'No data available'}), 500

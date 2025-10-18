@@ -86,27 +86,33 @@ vercel
 
 ## Data Sources
 
-**Primary:** Microburbs API (https://www.microburbs.com.au/report_generator/api)
-- Properties for sale
-- Market insights
-- Demographics
-- Schools & amenities
-- Risk factors
-
-**Enhancement:** Local investment score calculations
-- 7 fully analyzed suburbs with scores
-- Historical price growth
+**Current:** Local investment analysis (7 Sydney North Shore suburbs)
+- Complete investment scores (0-100)
+- 12-month price growth
 - Rental yield estimates
 - Road accessibility analysis
+- Market liquidity trends
 
-**Architecture:**
+**Microburbs API Integration (Ready):**
+- API client implemented and ready
+- Supports all endpoints (properties, market insights, demographics, schools, amenities, risk factors)
+- **Sandbox Note:** API sandbox returns HTML, not JSON (requires real API key)
+- **To Enable:** Set `MICROBURBS_API_KEY` environment variable with real key
+
+**Architecture (When API Key Added):**
 ```
 User Request
     ↓
-Try Microburbs API
+Try Microburbs API with real key
     ├─ Success → Use API data + enhance with local scores
-    └─ Fail → Fallback to local CSV data
+    └─ Fail → Fallback to local analyzed data
 ```
+
+**Current Limitation:**
+- Sandbox "test" token doesn't return JSON data
+- Need production API key to fetch live Microburbs data
+- Dashboard works fully with local analyzed data
+- API integration ready for production key
 
 ## Suburbs Available
 
