@@ -18,41 +18,59 @@ app = Flask(__name__)
 # Initialize API client
 api_client = MicroburbsAPIClient()
 
-# Expanded suburb list - including all available in Microburbs sandbox
-# The sandbox API has many more suburbs than just our local 7
-DEMO_SUBURBS = [
-    # Our analyzed suburbs (have investment scores)
-    'ROSEVILLE', 'WILLOUGHBY', 'NORTHBRIDGE', 'NORTH WILLOUGHBY',
-    'CASTLE COVE', 'MIDDLE COVE', 'WILLOUGHBY EAST',
-    
-    # Additional suburbs available in Microburbs API
-    'BELMONT NORTH', 'BELMONT', 'CHARLESTOWN', 'ADAMSTOWN',
-    'NEWCASTLE', 'HAMILTON', 'THE JUNCTION', 'COOKS HILL',
-    'MEREWETHER', 'BAR BEACH', 'STOCKTON', 'MAYFIELD',
-    
-    # Sydney suburbs
-    'SYDNEY', 'PARRAMATTA', 'BONDI', 'MANLY', 'CHATSWOOD',
-    'STRATHFIELD', 'BURWOOD', 'EPPING', 'HORNSBY',
-    
-    # More suburbs can be added as discovered in API
-]
+# Comprehensive suburb list - NSW & VIC
+# Microburbs API supports multiple states
+SUBURBS_BY_STATE = {
+    'NSW': [
+        # Sydney North Shore (with investment scores)
+        'ROSEVILLE', 'WILLOUGHBY', 'NORTHBRIDGE', 'NORTH WILLOUGHBY',
+        'CASTLE COVE', 'MIDDLE COVE', 'WILLOUGHBY EAST', 'CHATSWOOD',
+        
+        # Newcastle area
+        'BELMONT NORTH', 'BELMONT', 'CHARLESTOWN', 'ADAMSTOWN',
+        'NEWCASTLE', 'HAMILTON', 'THE JUNCTION', 'COOKS HILL',
+        'MEREWETHER', 'BAR BEACH', 'STOCKTON', 'MAYFIELD',
+        
+        # Sydney suburbs
+        'SYDNEY', 'PARRAMATTA', 'BONDI', 'MANLY',
+        'STRATHFIELD', 'BURWOOD', 'EPPING', 'HORNSBY',
+    ],
+    'VIC': [
+        # Melbourne CBD & Inner
+        'MELBOURNE', 'SOUTHBANK', 'DOCKLANDS', 'CARLTON',
+        'SOUTH YARRA', 'TOORAK', 'SOUTH MELBOURNE', 'PORT MELBOURNE',
+        
+        # Inner North
+        'FITZROY', 'COLLINGWOOD', 'BRUNSWICK', 'COBURG',
+        'NORTHCOTE', 'PRESTON', 'RESERVOIR',
+        
+        # Inner East
+        'RICHMOND', 'HAWTHORN', 'KEW', 'CAMBERWELL',
+        'CANTERBURY', 'SURREY HILLS', 'BOX HILL', 'BOX HILL',
+        
+        # Inner West
+        'FOOTSCRAY', 'YARRAVILLE', 'WILLIAMSTOWN', 'ALTONA',
+        'ESSENDON', 'MOONEE PONDS',
+        
+        # Inner South
+        'ST KILDA', 'ELWOOD', 'BRIGHTON', 'SANDRINGHAM',
+        'BENTLEIGH', 'CAULFIELD', 'GLEN WAVERLEY'
+    ]
+}
+
+# Flatten all suburbs for easy access
+ALL_SUBURBS = []
+for state, suburbs in SUBURBS_BY_STATE.items():
+    for suburb in suburbs:
+        ALL_SUBURBS.append({'name': suburb, 'state': state})
 
 # Function to discover available suburbs dynamically
 def get_available_suburbs():
     """
-    Try to get list of all available suburbs from API
-    Falls back to DEMO_SUBURBS if API call fails
+    Get list of all available suburbs (NSW + VIC)
+    Returns comprehensive list from both states
     """
-    try:
-        # Try the list endpoint
-        response = api_client.list_suburbs('NSW')
-        if response['success']:
-            return response['data']
-    except:
-        pass
-    
-    # Return our known list
-    return [{'name': s, 'state': 'NSW'} for s in DEMO_SUBURBS]
+    return ALL_SUBURBS
 
 # Load local data as fallback
 def load_local_data():
@@ -99,28 +117,45 @@ def index():
 def get_suburbs():
     """
     Get ALL available suburbs from Microburbs API
-    Fetches comprehensive data for each suburb
+    Supports NSW + VIC suburbs
     """
     # Get filter parameters
     use_api = request.args.get('use_api', 'true').lower() == 'true'
+    state_filter = request.args.get('state', '')
+    
+    # Get list of suburbs to fetch
+    suburbs_to_fetch = []
+    if state_filter:
+        suburbs_to_fetch = SUBURBS_BY_STATE.get(state_filter, [])
+    else:
+        # Get all suburbs from all states
+        for state, suburbs in SUBURBS_BY_STATE.items():
+            suburbs_to_fetch.extend(suburbs)
     
     if use_api:
         try:
-            # Get available suburbs list
-            available_suburbs = get_available_suburbs()
             api_suburbs = []
             
-            print(f"Attempting to fetch data for {len(DEMO_SUBURBS)} suburbs from API...")
+            print(f"Attempting to fetch data for {len(suburbs_to_fetch)} suburbs from API...")
             
-            for suburb in DEMO_SUBURBS:
+            # Get state for each suburb
+            suburb_state_map = {}
+            for state, suburbs in SUBURBS_BY_STATE.items():
+                for suburb in suburbs:
+                    suburb_state_map[suburb] = state
+            
+            for suburb in suburbs_to_fetch:
                 try:
-                    # Try to get market insights (more comprehensive than just properties)
-                    market_data = api_client.get_market_insights(suburb, 'NSW')
+                    # Get correct state for this suburb
+                    suburb_state = suburb_state_map.get(suburb, 'NSW')
+                    
+                    # Try to get market insights
+                    market_data = api_client.get_market_insights(suburb, suburb_state)
                     
                     # Build suburb info
                     suburb_info = {
                         'suburb': suburb,
-                        'state': 'NSW',
+                        'state': suburb_state,
                         'postcode': get_postcode(suburb),
                         'data_source': 'API'
                     }
@@ -253,7 +288,7 @@ def get_filters():
     return jsonify({
         'success': True,
         'filters': {
-            'states': ['NSW'],  # Expandable when more data available
+            'states': ['NSW', 'VIC'],  # Now supports NSW + Victoria!
             'score_ranges': [
                 {'label': '75+ (Strong Buy)', 'min': 75, 'max': 100},
                 {'label': '60-75 (Buy)', 'min': 60, 'max': 75},
@@ -294,43 +329,49 @@ def get_stats():
     })
 
 def get_postcode(suburb):
-    """Map suburb to postcode - expanded list"""
+    """Map suburb to postcode - NSW + VIC"""
     postcode_map = {
-        # Sydney North Shore
-        'ROSEVILLE': '2069',
-        'WILLOUGHBY': '2068',
-        'NORTHBRIDGE': '2063',
-        'NORTH WILLOUGHBY': '2068',
-        'CASTLE COVE': '2069',
-        'MIDDLE COVE': '2068',
-        'WILLOUGHBY EAST': '2068',
-        'CHATSWOOD': '2067',
+        # NSW - Sydney North Shore
+        'ROSEVILLE': '2069', 'WILLOUGHBY': '2068', 'NORTHBRIDGE': '2063',
+        'NORTH WILLOUGHBY': '2068', 'CASTLE COVE': '2069', 'MIDDLE COVE': '2068',
+        'WILLOUGHBY EAST': '2068', 'CHATSWOOD': '2067',
         
-        # Newcastle area
-        'BELMONT NORTH': '2280',
-        'BELMONT': '2280',
-        'CHARLESTOWN': '2290',
-        'ADAMSTOWN': '2289',
-        'NEWCASTLE': '2300',
-        'HAMILTON': '2303',
-        'THE JUNCTION': '2291',
-        'COOKS HILL': '2300',
-        'MEREWETHER': '2291',
-        'BAR BEACH': '2300',
-        'STOCKTON': '2295',
-        'MAYFIELD': '2304',
+        # NSW - Newcastle area
+        'BELMONT NORTH': '2280', 'BELMONT': '2280', 'CHARLESTOWN': '2290',
+        'ADAMSTOWN': '2289', 'NEWCASTLE': '2300', 'HAMILTON': '2303',
+        'THE JUNCTION': '2291', 'COOKS HILL': '2300', 'MEREWETHER': '2291',
+        'BAR BEACH': '2300', 'STOCKTON': '2295', 'MAYFIELD': '2304',
         
-        # Sydney suburbs
-        'SYDNEY': '2000',
-        'PARRAMATTA': '2150',
-        'BONDI': '2026',
-        'MANLY': '2095',
-        'STRATHFIELD': '2135',
-        'BURWOOD': '2134',
-        'EPPING': '2121',
-        'HORNSBY': '2077'
+        # NSW - Sydney suburbs
+        'SYDNEY': '2000', 'PARRAMATTA': '2150', 'BONDI': '2026',
+        'MANLY': '2095', 'STRATHFIELD': '2135', 'BURWOOD': '2134',
+        'EPPING': '2121', 'HORNSBY': '2077',
+        
+        # VIC - Melbourne CBD & Inner
+        'MELBOURNE': '3000', 'SOUTHBANK': '3006', 'DOCKLANDS': '3008',
+        'CARLTON': '3053', 'SOUTH YARRA': '3141', 'TOORAK': '3142',
+        'SOUTH MELBOURNE': '3205', 'PORT MELBOURNE': '3207',
+        
+        # VIC - Inner North
+        'FITZROY': '3065', 'COLLINGWOOD': '3066', 'BRUNSWICK': '3056',
+        'COBURG': '3058', 'NORTHCOTE': '3070', 'PRESTON': '3072',
+        'RESERVOIR': '3073',
+        
+        # VIC - Inner East
+        'RICHMOND': '3121', 'HAWTHORN': '3122', 'KEW': '3101',
+        'CAMBERWELL': '3124', 'CANTERBURY': '3126', 'SURREY HILLS': '3127',
+        'BOX HILL': '3128',
+        
+        # VIC - Inner West
+        'FOOTSCRAY': '3011', 'YARRAVILLE': '3013', 'WILLIAMSTOWN': '3016',
+        'ALTONA': '3018', 'ESSENDON': '3040', 'MOONEE PONDS': '3039',
+        
+        # VIC - Inner South
+        'ST KILDA': '3182', 'ELWOOD': '3184', 'BRIGHTON': '3186',
+        'SANDRINGHAM': '3191', 'BENTLEIGH': '3204', 'CAULFIELD': '3162',
+        'GLEN WAVERLEY': '3150'
     }
-    return postcode_map.get(suburb, '2000')
+    return postcode_map.get(suburb, '0000')
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
