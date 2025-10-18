@@ -46,15 +46,12 @@ SUBURBS_BY_STATE = {
         
         # Inner East
         'RICHMOND', 'HAWTHORN', 'KEW', 'CAMBERWELL',
-        'CANTERBURY', 'SURREY HILLS', 'BOX HILL', 'BOX HILL',
-        
-        # Inner West
-        'FOOTSCRAY', 'YARRAVILLE', 'WILLIAMSTOWN', 'ALTONA',
-        'ESSENDON', 'MOONEE PONDS',
-        
-        # Inner South
-        'ST KILDA', 'ELWOOD', 'BRIGHTON', 'SANDRINGHAM',
-        'BENTLEIGH', 'CAULFIELD', 'GLEN WAVERLEY'
+        'CANTERBURY', 'SURREY HILLS', 'BOX HILL', 'BLACKBURN',
+        'FLEMINGTON', 'NICKLIN', 'NORTHCOTE', 'PRESTON',
+        'RESERVOIR', 'YARRAVILLE', 'WILLIAMSTOWN', 'ALTONA',
+        'ESSENDON', 'MOONEE PONDS', 'ST KILDA', 'ELWOOD',
+        'BRIGHTON', 'SANDRINGHAM', 'BENTLEIGH', 'CAULFIELD',
+        'GLEN WAVERLEY'
     ]
 }
 

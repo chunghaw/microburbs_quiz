@@ -150,29 +150,39 @@ function renderSuburbs() {
 
 // Create suburb card HTML
 function createSuburbCard(suburb) {
-    const scoreClass = getScoreClass(suburb.total_score);
-    const growthClass = suburb.price_growth_pct > 0 ? 'positive' : 
-                        suburb.price_growth_pct < 0 ? 'negative' : 'neutral';
-    const reliabilityClass = suburb.reliability.toLowerCase();
+    // Safe access to properties with defaults
+    const totalScore = suburb.total_score || 0;
+    const scoreClass = getScoreClass(totalScore);
+    const priceGrowth = suburb.price_growth_pct || 0;
+    const growthClass = priceGrowth > 0 ? 'positive' : priceGrowth < 0 ? 'negative' : 'neutral';
+    const reliability = suburb.reliability || 'N/A';
+    const reliabilityClass = reliability.toLowerCase();
+    const hasScore = suburb.has_investment_score || false;
     
-    const growthDisplay = suburb.price_growth_pct === 0 ? 'N/A' : 
-                         `${suburb.price_growth_pct > 0 ? '+' : ''}${suburb.price_growth_pct.toFixed(1)}%`;
+    const growthDisplay = priceGrowth === 0 ? 'N/A' : 
+                         `${priceGrowth > 0 ? '+' : ''}${priceGrowth.toFixed(1)}%`;
+    
+    const scoreDisplay = hasScore ? totalScore.toFixed(1) : 'N/A';
+    const actionDisplay = suburb.action || (hasScore ? 'N/A' : 'API Data Only');
+    const medianPrice = suburb.recent_median_price || 0;
+    const yieldPct = suburb.estimated_yield_pct || 0;
+    const recentTrans = suburb.recent_transactions || 0;
     
     return `
         <div class="suburb-card" data-suburb="${suburb.suburb}">
-            <div class="reliability-badge ${reliabilityClass}">${suburb.reliability}</div>
+            ${reliability !== 'N/A' ? `<div class="reliability-badge ${reliabilityClass}">${reliability}</div>` : ''}
             <div class="suburb-card-header">
                 <div>
                     <h3 class="suburb-name">${suburb.suburb}</h3>
                     <p class="suburb-location">${suburb.state || 'NSW'} ${suburb.postcode || ''}</p>
                 </div>
                 <div class="score-badge ${scoreClass}">
-                    <span class="score-number">${suburb.total_score.toFixed(1)}</span>
-                    <span class="score-label">SCORE</span>
+                    <span class="score-number">${scoreDisplay}</span>
+                    <span class="score-label">${hasScore ? 'SCORE' : 'API'}</span>
                 </div>
             </div>
             
-            <div class="action-tag ${scoreClass}">${suburb.action}</div>
+            <div class="action-tag ${scoreClass}">${actionDisplay}</div>
             
             <div class="suburb-metrics">
                 <div class="metric">
@@ -181,15 +191,15 @@ function createSuburbCard(suburb) {
                 </div>
                 <div class="metric">
                     <span class="metric-label">Median Price</span>
-                    <span class="metric-value">$${(suburb.recent_median_price/1e6).toFixed(2)}M</span>
+                    <span class="metric-value">${medianPrice > 0 ? '$' + (medianPrice/1e6).toFixed(2) + 'M' : 'N/A'}</span>
                 </div>
                 <div class="metric">
                     <span class="metric-label">Rental Yield</span>
-                    <span class="metric-value">${suburb.estimated_yield_pct.toFixed(1)}%</span>
+                    <span class="metric-value">${yieldPct > 0 ? yieldPct.toFixed(1) + '%' : 'N/A'}</span>
                 </div>
                 <div class="metric">
                     <span class="metric-label">Transactions</span>
-                    <span class="metric-value">${suburb.recent_transactions} sales</span>
+                    <span class="metric-value">${recentTrans > 0 ? recentTrans + ' sales' : 'See API'}</span>
                 </div>
             </div>
         </div>
